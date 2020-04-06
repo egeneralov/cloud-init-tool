@@ -1,7 +1,9 @@
 package t
 
 import (
-	"github.com/egeneralov/cloud-init-tool/internal/utils"
+	//	"github.com/egeneralov/cloud-init-tool/internal/utils"
+	"io/ioutil"
+
 	"os/user"
 )
 
@@ -38,10 +40,25 @@ func (self User) DefaultUser() (User, error) {
 		self.Gecos = usr.Name
 	}
 
-	key, err := utils.GetIDRSA()
+	//	key, err := utils.GetIDRSA()
+	key, err := GetIDRSA()
 	if err == nil {
 		self.SSHAuthorizedKeys = append(self.SSHAuthorizedKeys, key)
 	}
 
 	return self, nil
+}
+
+func GetIDRSA() (string, error) {
+	usr, err := user.Current()
+	if err != nil {
+		return "", err
+	}
+
+	dat, err := ioutil.ReadFile(usr.HomeDir + "/.ssh/id_rsa.pub")
+	if err != nil {
+		return "", err
+	}
+
+	return string(dat), nil
 }

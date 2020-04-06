@@ -18,48 +18,12 @@ var (
 
 	CloudInitDirectory string
 	OutputDirectory    string
+
+	err error
 )
 
 func main() {
-	dir, err := os.Getwd()
-
-	if err != nil {
-		dir = "/"
-	}
-
-	flag.StringVar(
-		&CloudInitDirectory,
-		"cloud-init-directory",
-		dir+"/cloud-init",
-		"directory for cloud-init",
-	)
-	flag.StringVar(
-		&OutputDirectory,
-		"output-directory",
-		dir,
-		"output directory",
-	)
-	flag.StringVar(
-		&password,
-		"password",
-		password,
-		"password",
-	)
-	flag.BoolVar(
-		&RootEnabled,
-		"root-enabled",
-		false,
-		"enable root access",
-	)
-	/*
-		flag.BoolVar(
-			&UserData.AptPreserveSourcesList,
-			"apt-preserve-sources-list",
-			false,
-			"apt-preserve-sources-list",
-		)
-	*/
-	flag.Parse()
+	flags()
 
 	for _, path := range []string{CloudInitDirectory, OutputDirectory} {
 		os.Mkdir(path, os.ModePerm)
@@ -67,6 +31,7 @@ func main() {
 
 	prepareUserData()
 	writeFiles()
+
 	err = utils.DirectoryToISO(
 		OutputDirectory+"/init.iso",
 		CloudInitDirectory,
@@ -85,7 +50,7 @@ func prepareUserData() {
 		UserData.Users = append(UserData.Users, myUser)
 	}
 
-	if RootEnabled {
+	if RootEnabled && UserData.Users[0].Name != "root" {
 		root := t.User{}.New("root", password)
 		root.Sudo = "ALL=(ALL) NOPASSWD:ALL"
 		sshKey, err := utils.GetIDRSA()
@@ -124,4 +89,38 @@ func writeFiles() {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func flags() {
+	dir, err := os.Getwd()
+
+	if err != nil {
+		dir = "/"
+	}
+
+	flag.StringVar(
+		&CloudInitDirectory,
+		"cloud-init-directory",
+		dir+"/cloud-init",
+		"directory for cloud-init",
+	)
+	flag.StringVar(
+		&OutputDirectory,
+		"output-directory",
+		dir,
+		"output directory",
+	)
+	flag.StringVar(
+		&password,
+		"password",
+		password,
+		"password",
+	)
+	flag.BoolVar(
+		&RootEnabled,
+		"root-enabled",
+		false,
+		"enable root access",
+	)
+	flag.Parse()
 }
