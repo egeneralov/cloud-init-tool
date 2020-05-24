@@ -1,6 +1,7 @@
-.dockerignore
 .git
 .gitignore
-.gitlab-ci.yml
+.github
+.dockerignore
 Dockerfile
+.gitlab-ci.yml
 vendor

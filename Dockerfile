@@ -1,11 +1,29 @@
-FROM golang
-ENV GO111MODULE=on
+FROM golang:1.14.2-alpine
+
+RUN apk add --no-cache ca-certificates
+
+ENV \
+  GO111MODULE=on \
+  CGO_ENABLED=0 \
+  GOOS=linux \
+  GOARCH=amd64
+
 WORKDIR /go/src/github.com/egeneralov/cloud-init-tool
-ADD go.mod go.sum .
+ADD go.mod go.sum /go/src/github.com/egeneralov/cloud-init-tool/
 RUN go mod download
+
 ADD . .
-RUN go build -o /go/bin/cloud-init
+
+RUN go build -v -installsuffix cgo -ldflags="-w -s" -o /go/bin/cloud-init-tool .
+
 
 FROM alpine
-ENV PATH=$PATH:/go/bin/
-COPY --from=0 /go/bin/cloud-init /go/bin/cloud-init
+
+RUN apk add --no-cache ca-certificates
+USER nobody
+ENV PATH='/go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+CMD /go/bin/cloud-init-tool
+
+COPY --from=0 /go/bin /go/bin
+
+
