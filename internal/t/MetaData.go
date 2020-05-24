@@ -10,6 +10,7 @@ func (self MetaData) New(hostname string) MetaData {
 	return MetaData{
 		// 		DSMode:        "local",
 		InstanceID:    "iid-local01",
-		LocalHostname: "cloudimg",
+		LocalHostname: hostname,
+// 		LocalHostname: "cloudimg",
 	}
 }

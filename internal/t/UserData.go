@@ -11,6 +11,10 @@ type UserData struct {
 func (self UserData) New() UserData {
 	return UserData{
 		AptPreserveSourcesList: true,
+		Bootcmd: []string{
+			"touch /var/lib/cloud/instance/locale-check.skip",
+			"apt-get update -q",
+		},
 		/*
 			GrowPart: GrowPart{
 				Mode:    "auto",

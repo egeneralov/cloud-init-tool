@@ -32,7 +32,7 @@ func Hostname() string {
 }
 
 func DirectoryToISO(output string, directory string) error {
-	fmt.Println(output)
+// 	fmt.Println(output)
 	os.Remove(output)
 
 	var command *exec.Cmd
@@ -64,7 +64,12 @@ func RunCmd(cmd string) ([]byte, error) {
 }
 
 func RunParallelsVM(opts t.VMOptions) error {
+	fmt.Printf("%+q\n", opts)
+
 	script := []string{
+		fmt.Sprintf("prlctl list | grep %v && prlctl stop %v --kill", opts.Name, opts.Name),
+		fmt.Sprintf("prlctl list -a | grep %v && prlctl delete %v", opts.Name, opts.Name),
+		// 		fmt.Sprintf("prlctl delete %v", opts.Name),
 		fmt.Sprintf("prlctl create %v --ostype linux --distribution debian --location /tmp/", opts.Name),
 		fmt.Sprintf(
 			"prlctl set %v --cpus %d --memsize %d --autostart off --autostop stop --bios-type legacy --faster-vm on --resource-quota unlimited",
@@ -78,12 +83,15 @@ func RunParallelsVM(opts t.VMOptions) error {
 	}
 	after_script := []string{
 		fmt.Sprintf("prlctl start %v", opts.Name),
-		fmt.Sprintf("while [ \"$(prlctl list | grep '%v')\" ]; do sleep 1; done;", opts.Name),
-		// fmt.Sprintf("prlctl stop %v --kill", opts.Name),
-		fmt.Sprintf("prlctl delete %v", opts.Name),
+		/*
+		   		fmt.Sprintf("while [ \"$(prlctl list | grep '%v')\" ]; do sleep 1; done;", opts.Name),
+		   // 		fmt.Sprintf("prlctl stop %v --kill", opts.Name),
+		   		fmt.Sprintf("prlctl delete %v", opts.Name),
+		*/
 	}
 
 	for _, disk := range opts.Disks {
+		//   	fmt.Println(disk)
 		script = append(
 			script,
 			fmt.Sprintf(
@@ -98,12 +106,18 @@ func RunParallelsVM(opts t.VMOptions) error {
 	}
 
 	for _, el := range script {
-		// 		fmt.Println(el)
-		_, err := RunCmd(el)
-		if err != nil {
-			fmt.Println(el)
-			return err
-		}
+		fmt.Println(el)
+		RunCmd(el)
+
+		/*
+		   		_, err := RunCmd(el)
+		   		if err != nil {
+		   			fmt.Println(el)
+		   			fmt.Println(err)
+		   // 			return err
+		   		}
+		*/
+
 	}
 	return nil
 }
